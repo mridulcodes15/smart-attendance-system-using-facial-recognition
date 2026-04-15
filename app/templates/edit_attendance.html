@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Attendance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="navbar">Edit Attendance</div>
+<div class="container">
+    <div class="card">
+        <div class="card-header" style="align-items:center;">
+            <h3>Edit Attendance Records</h3>
+            <a href="/dashboard" class="btn btn-outline">Back</a>
+        </div>
+        <table class="table">
+            <thead><tr><th>Student</th><th>Roll</th><th>Subject</th><th>Date</th><th>Time</th><th>Action</th></tr></thead>
+            <tbody>
+            {% for id, name, roll, subject, date, time in rows %}
+            <tr>
+                <form method="POST">
+                    <td>{{ name or 'Unknown' }}</td>
+                    <td>{{ roll or 'N/A' }}</td>
+                    <td><input name="subject" value="{{ subject }}" style="width:120px;"></td>
+                    <td><input name="date" value="{{ date }}" style="width:95px;"></td>
+                    <td><input name="time" value="{{ time }}" style="width:80px;"></td>
+                    <td>
+                        <input type="hidden" name="attendance_id" value="{{ id }}">
+                        <button name="action" value="update" class="btn btn-primary" style="width:auto;">Save</button>
+                        <button name="action" value="delete" class="btn btn-outline" style="width:auto;">Delete</button>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

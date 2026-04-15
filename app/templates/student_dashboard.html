@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ── LAYOUT SHELL ── */
+        .app-shell {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 248px;
+            flex-shrink: 0;
+            background: #0e1220;
+            border-right: 1px solid rgba(74,222,128,0.12);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100vh;
+            z-index: 200;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar-logo {
+            padding: 22px 20px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-logo .brand {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.15rem;
+            color: #eef0f9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-dot {
+            width: 9px; height: 9px;
+            background: #4ade80;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(74,222,122,0.55);
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo .sub {
+            font-size: 0.68rem;
+            color: #454d6a;
+            font-family: 'DM Mono', monospace;
+            margin-top: 5px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .sidebar-section {
+            padding: 16px 12px 6px;
+        }
+
+        .sidebar-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #454d6a;
+            padding: 0 8px;
+            margin-bottom: 6px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: #7b84a8;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.18s ease;
+            margin-bottom: 2px;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(74,222,128,0.07);
+            color: #eef0f9;
+            border-color: rgba(74,222,128,0.15);
+        }
+
+        .nav-item.active {
+            background: rgba(74,222,128,0.10);
+            color: #86efac;
+            border-color: rgba(74,222,128,0.22);
+        }
+
+        .nav-icon {
+            width: 17px; height: 17px;
+            flex-shrink: 0;
+            opacity: 0.85;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            padding: 14px 12px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .nav-item.logout { color: #f87171; }
+        .nav-item.logout:hover {
+            background: rgba(248,113,113,0.08);
+            border-color: rgba(248,113,113,0.2);
+            color: #fca5a5;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .main-content {
+            margin-left: 248px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* ── TOPBAR ── */
+        .topbar {
+            background: rgba(17,22,41,0.88);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(74,222,128,0.12);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1rem;
+            color: #eef0f9;
+            font-weight: 400;
+        }
+
+        .student-badge {
+            background: rgba(74,222,128,0.10);
+            border: 1px solid rgba(74,222,128,0.25);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.72rem;
+            color: #86efac;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.04em;
+        }
+
+        /* ── PAGE BODY ── */
+        .page-body {
+            padding: 24px 28px;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #111629;
+            border: 1px solid rgba(74,222,128,0.12);
+            border-radius: 14px;
+            padding: 22px 26px;
+            margin-bottom: 20px;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #4ade80, #6c8aff, #4ade80);
+            opacity: 0.55;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: -60px; right: -40px;
+            width: 220px; height: 220px;
+            background: radial-gradient(circle, rgba(74,222,128,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            margin: 0 0 4px;
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.75rem;
+            font-weight: 400;
+            color: #eef0f9;
+        }
+
+        /* ── BADGE PILLS ── */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-family: 'DM Mono', monospace;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+        }
+
+        .badge.safe {
+            background: rgba(74,222,128,0.12);
+            color: #86efac;
+            border: 1px solid rgba(74,222,128,0.25);
+        }
+
+        .badge.moderate {
+            background: rgba(251,191,36,0.10);
+            color: #fde68a;
+            border: 1px solid rgba(251,191,36,0.25);
+        }
+
+        .badge.high {
+            background: rgba(248,113,113,0.10);
+            color: #fca5a5;
+            border: 1px solid rgba(248,113,113,0.25);
+        }
+
+        /* ── PERCENTAGE BAR ── */
+        .pct-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pct-bar {
+            flex: 1;
+            height: 5px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 99px;
+            overflow: hidden;
+            min-width: 60px;
+        }
+
+        .pct-fill {
+            height: 100%;
+            border-radius: 99px;
+            transition: width 0.4s ease;
+        }
+
+        .pct-fill.safe    { background: #4ade80; }
+        .pct-fill.moderate { background: #fbbf24; }
+        .pct-fill.high    { background: #f87171; }
+
+        .pct-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.8rem;
+            color: #7b84a8;
+            min-width: 36px;
+            text-align: right;
+        }
+
+        /* ── INLINE FORM ── */
+        .inline-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .inline-form .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .inline-form label {
+            font-size: 0.7rem;
+            font-family: 'DM Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #454d6a;
+        }
+
+        .inline-form input {
+            margin-top: 0;
+            width: auto;
+            min-width: 160px;
+        }
+
+        /* ── MOBILE TOGGLE ── */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #eef0f9;
+            cursor: pointer;
+            padding: 6px;
+            margin: 0;
+            width: auto;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 199;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.open { display: block; }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: flex; }
+            .page-body { padding: 16px; }
+            .hero { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+    <!-- Overlay -->
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="brand">
+                <span class="brand-dot"></span>
+                Student Panel
+            </div>
+            <div class="sub">Attendance System</div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">My Attendance</div>
+
+            <a href="#" class="nav-item active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                Overview
+            </a>
+
+            <a href="#detailed-records" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Detailed Records
+            </a>
+
+            <a href="#timetable-section" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                Timetable
+            </a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">Downloads</div>
+
+            <a href="/download_student_attendance" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                Full Excel Report
+            </a>
+
+            <a href="#monthly-section" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Monthly Report
+            </a>
+        </div>
+
+        <div class="sidebar-bottom">
+            <a href="/logout" class="nav-item logout">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- ── MAIN CONTENT ── -->
+    <div class="main-content">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div style="display:flex; align-items:center; gap:14px;">
+                <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <span class="topbar-title">Your Attendance</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span class="student-badge">◉ STUDENT</span>
+                <span class="subtle" style="font-size:0.8rem;">Welcome back</span>
+            </div>
+        </header>
+
+        <!-- PAGE BODY -->
+        <div class="page-body">
+
+            <!-- HERO -->
+            <div class="hero">
+                <div>
+                    <p class="subtle" style="margin:0 0 6px;">Student Portal</p>
+                    <h1>Your Attendance</h1>
+                    <p class="caption">Track your subject-wise attendance and stay ahead of absentee limits.</p>
+                </div>
+                <div class="hero-actions">
+                    <a href="/download_student_attendance" class="btn btn-primary">Download Excel</a>
+                    <a href="/timetable" class="btn btn-outline">View Timetable</a>
+                </div>
+            </div>
+
+            <!-- ATTENDANCE SUMMARY TABLE -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Subject-wise Summary</h3>
+                    <span class="small">Live attendance data</span>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Attended</th>
+                            <th>Total</th>
+                            <th>Percentage</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in result %}
+                    <tr>
+                        <td style="font-weight:500;">{{ row[0] }}</td>
+                        <td>
+                            <span style="font-family:'DM Mono',monospace; font-size:0.85rem;">{{ row[1] }}</span>
+                        </td>
+                        <td>
+                            <span style="font-family:'DM Mono',monospace; font-size:0.85rem; color:#7b84a8;">{{ row[2] }}</span>
+                        </td>
+                        <td>
+                            <div class="pct-wrap">
+                                <div class="pct-bar">
+                                    <div class="pct-fill {% if row[4] == 'Safe' %}safe{% elif row[4] == 'Moderate Risk' %}moderate{% else %}danger{% endif %}"
+                                         style="width: {{ row[3] }}%;">
+                                    </div>
+                                </div>
+                                <span class="pct-label">{{ row[3] }}%</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if row[4] == "Safe" %}
+                                <span class="badge safe">Safe</span>
+                            {% elif row[4] == "Moderate Risk" %}
+                                <span class="badge moderate">Warning</span>
+                            {% else %}
+                                <span class="badge high">High Risk</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- MONTHLY DOWNLOAD -->
+            <div class="card" id="monthly-section" style="margin-top:14px;">
+                <div class="card-header">
+                    <h3>Monthly Attendance Report</h3>
+                    <span class="small">Download by month</span>
+                </div>
+                <form action="/download_student_monthly_attendance" method="get">
+                    <div class="inline-form">
+                        <div class="field">
+                            <label>Month</label>
+                            <input type="month" name="month_year" required>
+                        </div>
+                        <button type="submit" style="width:auto; padding:10px 20px; margin-top:0; align-self:flex-end;">
+                            Download Monthly
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- TIMETABLE -->
+            <div class="card" id="timetable-section" style="margin-top:14px;">
+                <div class="card-header">
+                    <h3>Lecture Timetable</h3>
+                    <a href="/timetable" class="btn btn-outline" style="font-size:0.8rem; padding:7px 14px;">View Full →</a>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr><th>Day</th><th>Start</th><th>End</th><th>Subject</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for entry in timetable %}
+                        <tr>
+                            <td>{{ entry.day }}</td>
+                            <td>{{ entry.start }}</td>
+                            <td>{{ entry.end }}</td>
+                            <td>{{ entry.subject }}</td>
+                        </tr>
+                    {% endfor %}
+                    {% if timetable|length == 0 %}
+                        <tr><td colspan="4" style="color:#454d6a; font-style:italic;">No timetable available yet.</td></tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- DETAILED RECORDS -->
+            <div class="card" id="detailed-records" style="margin-top:14px;">
+                <div class="card-header">
+                    <h3>Detailed Records</h3>
+                    <span class="small">All attendance entries</span>
+                </div>
+                {% if records %}
+                <table class="recent-table">
+                    <thead>
+                        <tr><th>Subject</th><th>Date</th><th>Time</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for subject, date, time in records %}
+                        <tr>
+                            <td>{{ subject }}</td>
+                            <td>{{ date }}</td>
+                            <td>
+                                <span style="font-family:'DM Mono',monospace; font-size:0.8rem; color:#7b84a8;">{{ time }}</span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="empty">No attendance records yet.</p>
+                {% endif %}
+            </div>
+
+        </div><!-- /page-body -->
+    </div><!-- /main-content -->
+</div><!-- /app-shell -->
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('open');
+    }
+</script>
+
+</body>
+</html>

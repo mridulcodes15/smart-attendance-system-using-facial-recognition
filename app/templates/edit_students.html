@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Students</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="navbar">Admin - Edit Student Records</div>
+<div class="container">
+    <div class="card">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>Edit Student Records</h3>
+            <a href="/dashboard" class="btn btn-outline">Back</a>
+        </div>
+        {% if msg %}
+            <div class="success" style="margin-bottom:10px;">{{ msg }}</div>
+        {% endif %}
+        <table class="table">
+            <thead>
+                <tr><th>Roll</th><th>Name</th><th>Face Image</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for id, name, roll, image in rows %}
+                <tr>
+                    <form method="POST" style="display:contents;">
+                        <td><input name="roll" value="{{ roll }}" required></td>
+                        <td><input name="name" value="{{ name }}" required></td>
+                        <td>{% if image %}<span style="color:green;">Saved</span>{% else %}<span style="color:#b33;">Missing</span>{% endif %}</td>
+                        <td>
+                            <input type="hidden" name="student_id" value="{{ id }}">
+                            <button name="action" value="update" class="btn btn-primary">Update</button>
+                            <button name="action" value="delete" class="btn btn-outline" onclick="return confirm('Delete student permanently?');">Delete</button>
+                        </td>
+                    </form>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Faculty Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* ── LAYOUT SHELL ── */
+        .app-shell {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 248px;
+            flex-shrink: 0;
+            background: #0e1220;
+            border-right: 1px solid rgba(108,138,255,0.13);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100vh;
+            z-index: 200;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-logo {
+            padding: 22px 20px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-logo .brand {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.15rem;
+            color: #eef0f9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-logo .brand-dot {
+            width: 9px; height: 9px;
+            background: #6c8aff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(108,138,255,0.6);
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo .sub {
+            font-size: 0.7rem;
+            color: #454d6a;
+            font-family: 'DM Mono', monospace;
+            margin-top: 4px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .sidebar-section {
+            padding: 16px 12px 6px;
+        }
+
+        .sidebar-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #454d6a;
+            padding: 0 8px;
+            margin-bottom: 6px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: #7b84a8;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.18s ease;
+            margin-bottom: 2px;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(108,138,255,0.08);
+            color: #eef0f9;
+            border-color: rgba(108,138,255,0.15);
+        }
+
+        .nav-item.active {
+            background: rgba(108,138,255,0.14);
+            color: #a5b4ff;
+            border-color: rgba(108,138,255,0.25);
+        }
+
+        .nav-icon {
+            width: 18px;
+            height: 18px;
+            opacity: 0.8;
+            flex-shrink: 0;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            padding: 14px 12px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .nav-item.logout {
+            color: #f87171;
+        }
+
+        .nav-item.logout:hover {
+            background: rgba(248,113,113,0.08);
+            border-color: rgba(248,113,113,0.2);
+            color: #fca5a5;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .main-content {
+            margin-left: 248px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* ── TOPBAR ── */
+        .topbar {
+            background: rgba(17, 22, 41, 0.85);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(108,138,255,0.13);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1rem;
+            color: #eef0f9;
+            font-weight: 400;
+        }
+
+        .topbar-meta {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .subject-pill {
+            background: rgba(108,138,255,0.12);
+            border: 1px solid rgba(108,138,255,0.25);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            color: #a5b4ff;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.03em;
+        }
+
+        /* ── PAGE BODY ── */
+        .page-body {
+            padding: 24px 28px;
+        }
+
+        /* ── HERO STRIP ── */
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #111629;
+            border: 1px solid rgba(108,138,255,0.13);
+            border-radius: 14px;
+            padding: 22px 26px;
+            margin-bottom: 20px;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #6c8aff, #e8c87a, #6c8aff);
+            opacity: 0.6;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: -50px; right: -30px;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(108,138,255,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            margin: 0 0 4px;
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.7rem;
+            font-weight: 400;
+            color: #eef0f9;
+        }
+
+        /* ── SECTION INLINE DOWNLOAD FORM ── */
+        .inline-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .inline-form .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .inline-form label {
+            font-size: 0.7rem;
+            font-family: 'DM Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #454d6a;
+        }
+
+        .inline-form input {
+            margin-top: 0;
+            width: auto;
+            min-width: 150px;
+        }
+
+        /* ── MOBILE TOGGLE ── */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #eef0f9;
+            cursor: pointer;
+            padding: 6px;
+            margin: 0;
+            width: auto;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 199;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .sidebar-overlay.open {
+                display: block;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .menu-toggle {
+                display: flex;
+            }
+            .page-body {
+                padding: 16px;
+            }
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-shell">
+
+    <!-- SIDEBAR OVERLAY (mobile) -->
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="brand">
+                <span class="brand-dot"></span>
+                Faculty Dashboard
+            </div>
+            <div class="sub">Attendance System</div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">Main</div>
+
+            <a href="#" class="nav-item active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                Overview
+            </a>
+
+            <a href="/attendance" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+                Start Attendance
+            </a>
+
+            <a href="/timetable" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                Timetable
+            </a>
+
+            <a href="/edit_attendance" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Edit Attendance
+            </a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">Downloads</div>
+
+            <a href="/download_attendance" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                Subject Excel
+            </a>
+
+            <a href="#monthly-section" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Monthly Report
+            </a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">Faculty</div>
+
+            <a href="/cse_faculty" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                CSE AIML Faculty
+            </a>
+        </div>
+
+        <div class="sidebar-bottom">
+            <a href="/logout" class="nav-item logout">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- ── MAIN CONTENT ── -->
+    <div class="main-content">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div style="display:flex; align-items:center; gap:14px;">
+                <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <span class="topbar-title">Overview</span>
+            </div>
+            <div class="topbar-meta">
+                {% if assigned_subject %}
+                    <span class="subject-pill">{{ assigned_subject }}</span>
+                {% endif %}
+                <span class="subtle" style="font-size:0.8rem;">Welcome back, Faculty</span>
+            </div>
+        </header>
+
+        <!-- PAGE BODY -->
+        <div class="page-body">
+
+            <!-- HERO -->
+            <div class="hero">
+                <div>
+                    <h1>Attendance Analytics</h1>
+                    {% if assigned_subject %}
+                        <p class="caption">Assigned Subject: <strong style="color:#a5b4ff;">{{ assigned_subject }}</strong></p>
+                    {% else %}
+                        <p class="caption" style="color:#f87171;">No subject assigned yet. Ask admin to assign a subject.</p>
+                    {% endif %}
+                    <p class="subtle" style="margin-top:4px;">Track student attendance, stay organized, and reduce absentee risk.</p>
+                </div>
+                <div class="hero-actions" style="flex-shrink:0;">
+                    <a href="/attendance" class="btn btn-primary">⚡ Start Attendance</a>
+                    <a href="/edit_attendance" class="btn btn-outline">Edit Records</a>
+                </div>
+            </div>
+
+            <!-- STAT GRID -->
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Total Students</div>
+                    <div class="stat-value">{{ stats.students }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Total Records</div>
+                    <div class="stat-value">{{ stats.attendance }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Subjects Monitored</div>
+                    <div class="stat-value">{{ stats.subjects }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Avg Records / Student</div>
+                    <div class="stat-value">{{ stats.average }}</div>
+                </div>
+            </div>
+
+            <!-- TWO COLUMN ROW -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px;">
+
+                <!-- UPLOAD CARD -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Upload Attendance Excel</h3>
+                        <span class="small">date · time · subject · roll</span>
+                    </div>
+                    <form method="POST" action="/upload_attendance" enctype="multipart/form-data">
+                        <input type="file" name="attendance_file" accept=".xlsx,.xls" required>
+                        <button type="submit" style="width:auto; padding:10px 20px;">Upload File</button>
+                    </form>
+                </div>
+
+                <!-- MONTHLY DOWNLOAD CARD -->
+                <div class="card" id="monthly-section">
+                    <div class="card-header">
+                        <h3>Monthly Attendance</h3>
+                        <span class="small">Download by subject &amp; month</span>
+                    </div>
+                    <form action="/download_subject_monthly_attendance" method="get">
+                        <div class="inline-form">
+                            <div class="field">
+                                <label>Subject</label>
+                                <input type="text" name="subject" placeholder="e.g. DBMS" required>
+                            </div>
+                            <div class="field">
+                                <label>Month</label>
+                                <input type="month" name="month_year" required>
+                            </div>
+                            <button type="submit" style="width:auto; padding:10px 18px; margin-top:0; align-self:flex-end;">Download</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+
+            <!-- TIMETABLE CARD -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Lecture Timetable</h3>
+                    <a href="/timetable" class="btn btn-outline" style="font-size:0.8rem; padding:7px 14px;">View Full →</a>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr><th>Day</th><th>Start</th><th>End</th><th>Subject</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for entry in timetable %}
+                        <tr>
+                            <td>{{ entry.day }}</td>
+                            <td>{{ entry.start }}</td>
+                            <td>{{ entry.end }}</td>
+                            <td>{{ entry.subject }}</td>
+                        </tr>
+                    {% endfor %}
+                    {% if timetable|length == 0 %}
+                        <tr><td colspan="4" style="color:#454d6a; font-style:italic;">No timetable entries yet.</td></tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- RECENT ATTENDANCE CARD -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recent Attendance</h3>
+                    <span class="small">Last 5 entries</span>
+                </div>
+                {% if recent %}
+                <table class="recent-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Student</th>
+                            <th>Subject</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for date, time, subject, student in recent %}
+                        <tr>
+                            <td>{{ date }}</td>
+                            <td>{{ time }}</td>
+                            <td>{{ student or 'Unknown' }}</td>
+                            <td>{{ subject }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="empty">No attendance records yet. Start taking attendance now.</p>
+                {% endif %}
+            </div>
+
+        </div><!-- /page-body -->
+    </div><!-- /main-content -->
+</div><!-- /app-shell -->
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('open');
+    }
+</script>
+
+</body>
+</html>

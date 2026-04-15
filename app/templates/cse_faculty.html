@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSE AIML Faculty</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="navbar">CSE AIML Faculty</div>
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h3>CSE AIML Faculty List</h3>
+            <a href="/dashboard" class="btn btn-outline">Back</a>
+        </div>
+        <table class="table">
+            <thead><tr><th>Username</th><th>Name</th><th>Department</th></tr></thead>
+            <tbody>
+            {% for username, name, department in faculty %}
+                <tr><td>{{ username }}</td><td>{{ name }}</td><td>{{ department }}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

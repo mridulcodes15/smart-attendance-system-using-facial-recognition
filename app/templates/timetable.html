@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lecture Timetable</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="navbar">Lecture Timetable</div>
+<div class="container">
+    <div class="card">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>Lecture Timetable</h3>
+            {% if role == 'admin' %}
+            <a href="/edit_timetable" class="btn btn-primary">Edit Timetable</a>
+            {% endif %}
+        </div>
+        <table class="table">
+            <thead><tr><th>Day</th><th>Start</th><th>End</th><th>Subject</th></tr></thead>
+            <tbody>
+                {% for entry in entries %}
+                <tr><td>{{ entry.day }}</td><td>{{ entry.start }}</td><td>{{ entry.end }}</td><td>{{ entry.subject }}</td></tr>
+                {% endfor %}
+                {% if entries|length == 0 %}
+                <tr><td colspan="4">No timetable entries yet.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

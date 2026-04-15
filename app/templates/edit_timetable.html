@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Timetable</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="navbar">Edit Timetable</div>
+<div class="container">
+    <div class="card">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>Edit Lecture Timetable</h3>
+            <a href="/dashboard" class="btn btn-outline">Back</a>
+        </div>
+        {% if msg %}
+            <div class="success" style="margin-bottom:10px;">{{ msg }}</div>
+        {% endif %}
+        <form method="POST">
+            <table class="table">
+                <thead><tr><th>Day</th><th>Start</th><th>End</th><th>Subject</th></tr></thead>
+                <tbody>
+                {% for entry in entries %}
+                <tr>
+                    <td><input name="day" value="{{ entry.day }}" required></td>
+                    <td><input name="start" value="{{ entry.start }}" required></td>
+                    <td><input name="end" value="{{ entry.end }}" required></td>
+                    <td><input name="subject" value="{{ entry.subject }}" required></td>
+                </tr>
+                {% endfor %}
+                {% for i in range(3) %}
+                <tr>
+                    <td><input name="day" placeholder="Day"></td>
+                    <td><input name="start" placeholder="HH:MM"></td>
+                    <td><input name="end" placeholder="HH:MM"></td>
+                    <td><input name="subject" placeholder="Subject"></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <button class="btn btn-primary" type="submit" style="width:auto;">Save Timetable</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

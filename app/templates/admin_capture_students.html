@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - Capture Student Face</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="navbar">Admin - Capture Student Face</div>
+<div class="container">
+    <div class="card">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>Students Face Reference</h3>
+            <a href="/dashboard" class="btn btn-outline">Back</a>
+        </div>
+        <table class="table">
+            <thead>
+                <tr><th>Name</th><th>Roll</th><th>Face Image</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                {% for id, name, roll, image in students %}
+                <tr>
+                    <td>{{ name }}</td>
+                    <td>{{ roll }}</td>
+                    <td>{% if image %}<span style="color:green;">Saved</span>{% else %}<span style="color:#b33;">Missing</span>{% endif %}</td>
+                    <td>
+                        <form method="POST" action="/capture_student_face/{{ id }}" style="margin:0;">
+                            <button class="btn btn-primary">Capture/Update Face</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

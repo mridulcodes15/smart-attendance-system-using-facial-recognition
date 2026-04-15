@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Faculty</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="navbar">Edit Faculty</div>
+<div class="container">
+    <div class="card">
+        <div class="card-header" style="align-items:center; justify-content:space-between;">
+            <h3>CSE AIML Faculty Management</h3>
+            <a href="/dashboard" class="btn btn-outline">Back</a>
+        </div>
+        {% if msg %}<div class="success" style="margin-bottom: 10px;">{{ msg }}</div>{% endif %}
+        <table class="table">
+            <thead>
+                <tr><th>Username</th><th>Name</th><th>Department</th><th>Assigned Subject</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+            {% for id, username, name, department, assigned_subject in rows %}
+            <tr>
+                <form method="POST">
+                    <td>{{ username }}</td>
+                    <td><input name="name" value="{{ name }}"></td>
+                    <td><input name="department" value="{{ department }}"></td>
+                    <td><input name="assigned_subject" value="{{ assigned_subject }}" placeholder="Subject"></td>
+                    <td>
+                        <input type="hidden" name="faculty_id" value="{{ id }}">
+                        <button name="action" value="update" class="btn btn-primary" style="width:auto;">Save</button>
+                        <button name="action" value="delete" class="btn btn-outline" style="width:auto;">Delete</button>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

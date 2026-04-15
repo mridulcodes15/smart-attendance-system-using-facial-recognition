@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Start Attendance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="navbar">Start Attendance</div>
+<div class="container">
+    <div class="card" style="max-width:500px;margin:auto;">
+        {% if subject %}
+            <h3>Starting Attendance for: {{ subject }}</h3>
+            <p>Press Start to open camera and mark attendance for this subject.</p>
+            <form method="POST">
+                <input type="hidden" name="subject" value="{{ subject }}">
+                <button type="submit" class="btn btn-primary">Start Face Attendance</button>
+            </form>
+        {% else %}
+            <h3>Lecture subject is not automatically detected</h3>
+            <p>Please select or enter subject to start attendance.</p>
+            <form method="POST">
+                <input name="subject" placeholder="Subject (e.g., CSE AIML)" required>
+                <button type="submit" class="btn btn-primary">Start Face Attendance</button>
+            </form>
+        {% endif %}
+        <p style="margin-top:10px; font-size:0.95rem;"><a href="/dashboard">Back to Dashboard</a></p>
+    </div>
+</div>
+</body>
+</html>

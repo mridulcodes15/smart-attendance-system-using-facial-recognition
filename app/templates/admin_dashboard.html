@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ── LAYOUT SHELL ── */
+        .app-shell {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 248px;
+            flex-shrink: 0;
+            background: #0e1220;
+            border-right: 1px solid rgba(108,138,255,0.13);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100vh;
+            z-index: 200;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar-logo {
+            padding: 22px 20px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-logo .brand {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.15rem;
+            color: #eef0f9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-dot {
+            width: 9px; height: 9px;
+            background: #e8c87a;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(232,200,122,0.6);
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo .sub {
+            font-size: 0.68rem;
+            color: #454d6a;
+            font-family: 'DM Mono', monospace;
+            margin-top: 5px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .sidebar-section {
+            padding: 16px 12px 6px;
+        }
+
+        .sidebar-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #454d6a;
+            padding: 0 8px;
+            margin-bottom: 6px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: #7b84a8;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.18s ease;
+            margin-bottom: 2px;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(232,200,122,0.07);
+            color: #eef0f9;
+            border-color: rgba(232,200,122,0.15);
+        }
+
+        .nav-item.active {
+            background: rgba(232,200,122,0.10);
+            color: #e8c87a;
+            border-color: rgba(232,200,122,0.22);
+        }
+
+        .nav-icon {
+            width: 17px; height: 17px;
+            flex-shrink: 0;
+            opacity: 0.8;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            padding: 14px 12px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .nav-item.logout { color: #f87171; }
+        .nav-item.logout:hover {
+            background: rgba(248,113,113,0.08);
+            border-color: rgba(248,113,113,0.2);
+            color: #fca5a5;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .main-content {
+            margin-left: 248px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* ── TOPBAR ── */
+        .topbar {
+            background: rgba(17,22,41,0.88);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(108,138,255,0.13);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1rem;
+            color: #eef0f9;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-badge {
+            background: rgba(232,200,122,0.12);
+            border: 1px solid rgba(232,200,122,0.28);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.72rem;
+            color: #e8c87a;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.04em;
+        }
+
+        /* ── PAGE BODY ── */
+        .page-body {
+            padding: 24px 28px;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #111629;
+            border: 1px solid rgba(108,138,255,0.13);
+            border-radius: 14px;
+            padding: 22px 26px;
+            margin-bottom: 20px;
+            gap: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #e8c87a, #6c8aff, #e8c87a);
+            opacity: 0.65;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: -60px; right: -40px;
+            width: 220px; height: 220px;
+            background: radial-gradient(circle, rgba(232,200,122,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            margin: 0 0 4px;
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.75rem;
+            font-weight: 400;
+            color: #eef0f9;
+        }
+
+        /* ── INLINE FORM ── */
+        .inline-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .inline-form .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .inline-form label {
+            font-size: 0.7rem;
+            font-family: 'DM Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #454d6a;
+        }
+
+        .inline-form input {
+            margin-top: 0;
+            width: auto;
+            min-width: 160px;
+        }
+
+        /* ── DELETE BTN ── */
+        .btn-danger {
+            background: transparent;
+            color: #f87171;
+            border: 1px solid rgba(248,113,113,0.3);
+            border-radius: 6px;
+            padding: 5px 12px;
+            font-size: 0.78rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            width: auto;
+            margin: 0;
+            transition: all 0.18s;
+        }
+
+        .btn-danger:hover {
+            background: rgba(248,113,113,0.1);
+            border-color: #f87171;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ── TWO COL GRID ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        /* ── MOBILE TOGGLE ── */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #eef0f9;
+            cursor: pointer;
+            padding: 6px;
+            margin: 0;
+            width: auto;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 199;
+        }
+
+        @media (max-width: 900px) {
+            .two-col { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.open { display: block; }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: flex; }
+            .page-body { padding: 16px; }
+            .hero { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+    <!-- Overlay -->
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="brand">
+                <span class="brand-dot"></span>
+                Admin Panel
+            </div>
+            <div class="sub">Attendance System</div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">Overview</div>
+
+            <a href="#" class="nav-item active">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                Dashboard
+            </a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">Management</div>
+
+            <a href="/edit_faculty" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                Edit Faculty
+            </a>
+
+            <a href="/edit_students" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Edit Students
+            </a>
+
+            <a href="/admin_capture_students" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Capture Student Faces
+            </a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">Timetable</div>
+
+            <a href="/timetable" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                View Timetable
+            </a>
+
+            <a href="/edit_timetable" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Edit Timetable
+            </a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">Downloads</div>
+
+            <a href="#monthly-section" class="nav-item">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                Monthly Report
+            </a>
+        </div>
+
+        <div class="sidebar-bottom">
+            <a href="/logout" class="nav-item logout">
+                <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- ── MAIN CONTENT ── -->
+    <div class="main-content">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div style="display:flex; align-items:center; gap:14px;">
+                <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <span class="topbar-title">System Overview</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span class="admin-badge">⬡ ADMIN</span>
+                <span class="subtle" style="font-size:0.8rem;">Welcome back</span>
+            </div>
+        </header>
+
+        <!-- PAGE BODY -->
+        <div class="page-body">
+
+            <!-- HERO -->
+            <div class="hero">
+                <div>
+                    <p class="subtle" style="margin:0 0 6px;">Welcome Admin</p>
+                    <h1>System Overview</h1>
+                    <p class="caption">Manage all students, faculty, timetables and attendance records.</p>
+                </div>
+                <div class="hero-actions">
+                    <a href="/edit_faculty" class="btn btn-primary">Edit Faculty</a>
+                    <a href="/edit_students" class="btn btn-primary">Edit Students</a>
+                    <a href="/admin_capture_students" class="btn btn-outline">Capture Faces</a>
+                </div>
+            </div>
+
+            <!-- STAT GRID -->
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Total Students</div>
+                    <div class="stat-value">{{ stats.students }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Total Faculty</div>
+                    <div class="stat-value">{{ stats.faculty }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Total Attendance</div>
+                    <div class="stat-value">{{ stats.attendance }}</div>
+                </div>
+            </div>
+
+            <!-- MONTHLY DOWNLOAD -->
+            <div class="card" id="monthly-section" style="margin-top:14px;">
+                <div class="card-header">
+                    <h3>Monthly Attendance Download</h3>
+                    <span class="small">Filter by subject &amp; month</span>
+                </div>
+                <form action="/download_subject_monthly_attendance" method="get">
+                    <div class="inline-form">
+                        <div class="field">
+                            <label>Subject</label>
+                            <input type="text" name="subject" placeholder="e.g. DBMS" required>
+                        </div>
+                        <div class="field">
+                            <label>Month</label>
+                            <input type="month" name="month_year" required>
+                        </div>
+                        <button type="submit" style="width:auto; padding:10px 20px; margin-top:0; align-self:flex-end;">
+                            Download Excel
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- STUDENTS + FACULTY (two col) -->
+            <div class="two-col">
+
+                <!-- STUDENTS TABLE -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Students &amp; Attendance</h3>
+                        <span class="small">{{ stats.students }} enrolled</span>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr><th>Name</th><th>Roll</th><th>Records</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                        {% for id, name, roll, count in student_records %}
+                            <tr>
+                                <td>{{ name }}</td>
+                                <td>
+                                    <span style="font-family:'DM Mono',monospace; font-size:0.8rem; color:#7b84a8;">{{ roll }}</span>
+                                </td>
+                                <td>{{ count }}</td>
+                                <td>
+                                    <form method="POST" action="/delete_student/{{ id }}" onsubmit="return confirm('Delete {{ name }} permanently?');">
+                                        <button class="btn-danger" type="submit">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- FACULTY TABLE -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Faculty — CSE AIML</h3>
+                        <span class="small">Auto-updated</span>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr><th>Username</th><th>Name</th><th>Dept</th><th>Subject</th></tr>
+                        </thead>
+                        <tbody>
+                        {% for username, name, department, assigned_subject in faculty_records %}
+                            <tr>
+                                <td>
+                                    <span style="font-family:'DM Mono',monospace; font-size:0.8rem; color:#7b84a8;">{{ username }}</span>
+                                </td>
+                                <td>{{ name }}</td>
+                                <td>{{ department or 'CSE AIML' }}</td>
+                                <td>
+                                    {% if assigned_subject %}
+                                        <span style="color:#a5b4ff; font-size:0.85rem;">{{ assigned_subject }}</span>
+                                    {% else %}
+                                        <span style="color:#454d6a; font-size:0.82rem; font-style:italic;">None</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <!-- TIMETABLE -->
+            <div class="card" style="margin-top:14px;">
+                <div class="card-header">
+                    <h3>Lecture Timetable</h3>
+                    <div style="display:flex; gap:8px;">
+                        <a href="/timetable" class="btn btn-outline" style="font-size:0.8rem; padding:7px 14px;">View →</a>
+                        <a href="/edit_timetable" class="btn btn-primary" style="font-size:0.8rem; padding:7px 14px;">Edit</a>
+                    </div>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr><th>Day</th><th>Start</th><th>End</th><th>Subject</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for entry in timetable %}
+                        <tr>
+                            <td>{{ entry.day }}</td>
+                            <td>{{ entry.start }}</td>
+                            <td>{{ entry.end }}</td>
+                            <td>{{ entry.subject }}</td>
+                        </tr>
+                    {% endfor %}
+                    {% if timetable|length == 0 %}
+                        <tr><td colspan="4" style="color:#454d6a; font-style:italic;">No timetable entries found.</td></tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- RECENT ATTENDANCE -->
+            <div class="card" style="margin-top:14px;">
+                <div class="card-header">
+                    <h3>Recent Attendance</h3>
+                    <span class="small">All records</span>
+                </div>
+                <table class="recent-table">
+                    <thead>
+                        <tr><th>Date</th><th>Time</th><th>Subject</th><th>Student</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for date, time, subject, student in all_attendance %}
+                        <tr>
+                            <td>{{ date }}</td>
+                            <td>{{ time }}</td>
+                            <td>{{ subject }}</td>
+                            <td>{{ student or 'Unknown' }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div><!-- /page-body -->
+    </div><!-- /main-content -->
+</div><!-- /app-shell -->
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('open');
+    }
+</script>
+
+</body>
+</html>
